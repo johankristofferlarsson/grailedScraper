@@ -1,37 +1,29 @@
+from bs4 import BeautifulSoup
 from selenium import webdriver 
+from selenium.webdriver.chrome.options import Options
+import requests
 import time
 import re
 
+options = Options()
+options.headless = True
+driver = webdriver.Chrome(options=options)
+driver.get("http://grailed.com/len")
 
-#launch url/maybe ask about this later? 
-url = "https://grailed.com/krist__offer"
-
-# set options
- 
-
-#   create new Chrome session
-browser = webdriver.Chrome()
-browser.set_window_position(0, 0)
-browser.set_window_size(300, 400)
+file = open("listings.txt", "w")
 
 
-#   go to url
-browser.get(url)
-time.sleep(3)
+time.sleep(1.5)
+int num = 0
 
-#   fetch number of listings and convert to text
-data = browser.find_element_by_xpath("//*[@id=\"wardrobe\"]/div/div[2]/div[1]/div[1]/a")
-string = ''.join(data.text)
+for listing in driver.find_elements_by_class_name('feed-item'):
+	designer = listing.find_element_by_class_name('listing-designer').text
+	name = listing.find_element_by_class_name('listing-title').text
+	price = listing.find_element_by_class_name('listing-price').text
+	price = re.findall("\d+", price.split("$")[1])
+	print(designer, ',', name, ': $', price[0])
+	print(designer, ',', name, ': $', price[0], file=file)
+	
 
-print(string)
-
-# extract numbers
-num = re.findall('\d+', string)
-num = int(num[0])
-
-if num > 1:
-    print("The user has some new listings.")
-
-
-# if there are new listings, update the current listing value and send me the designer, item name and price.
-
+file.close()
+driver.quit()
